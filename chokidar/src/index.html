@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模拟 Vite 热更新</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <h1>模拟 Vite 热更新 !!!!!!</h1>
+    <script>
+      const ws = new WebSocket('ws://localhost:3001')
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data)
+        console.log('接收到更新消息:', message)
+        if (message.type === 'css-update') {
+          console.log('执行 CSS 热更新')
+          document.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+            const href = link.getAttribute('href')
+            link.setAttribute('href', `${href.split('?')[0]}?t=${Date.now()}`)
+          })
+        } else if (message.type === 'js-update') {
+          console.log('执行 JS 热更新')
+          const name = message.path.split('/')[1]
+          const oldScript = document.querySelector(`script[src^="${name}"]`)
+          if (oldScript) oldScript.remove()
+          const script = document.createElement('script')
+          script.src = name + '?t=' + new Date().getTime()
+          document.body.appendChild(script)
+        } else if (message.type === 'reload') {
+          console.log('刷新页面')
+          // location.reload()
+        }
+      }
+    </script>
+  </body>
+</html>
